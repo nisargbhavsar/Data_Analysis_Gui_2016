@@ -1,4 +1,4 @@
-function [ varargout ] = KinVal_Extract(resample_rate, type, VelEnd_tolerance, vel_tolerance, pos, velocity, accel, vector_sagpos, vector_vel, vector_accel,if_vector_vel_tol,th_vector_vel_tol, varargin )
+function [ varargout ] = KinVal_Extract(side, resample_rate, type, VelEnd_tolerance, vel_tolerance, pos, velocity, accel, vector_sagpos, vector_vel, vector_accel,if_vector_vel_tol,th_vector_vel_tol, varargin )
 %Kinematic_Var_Extract Analyses given filtered data and returns data points
 %of needed kinematic variables
 %   INPUT:(type, tolerance, handles.Filtered_SagPos, handles.Filtered_Velocity, handles.Filtered_Accel)
@@ -31,13 +31,31 @@ if type ==0
  
 
     
-    %index finger max velocity (Z)
-    [~, indices] = findpeaks(velocity(:,3),'MinPeakHeight',if_vector_vel_tol);
-    if_max_vel_index_z = indices(1,1);
+%     %index finger max velocity (Z)
+%     [~, indices] = findpeaks(velocity(:,3),'MinPeakHeight',if_vector_vel_tol);
+%     if_max_vel_index_z = indices(1,1);
+% 
+%     %thumb max velocity (Z)
+%     [~, indices] = findpeaks(velocity(:,6),'MinPeakHeight',th_vector_vel_tol);
+%     th_max_vel_index_z= indices (1,1);
+    if(if_vector_vel_tol >0)
+        [peaks, indices] = findpeaks(velocity(:,3),'MinPeakHeight',if_vector_vel_tol);
+        if_max_vel_index_z = indices(1,1);
 
-    %thumb max velocity (Z)
-    [~, indices] = findpeaks(velocity(:,6),'MinPeakHeight',th_vector_vel_tol);
-    th_max_vel_index_z= indices (1,1);
+        
+        %Thumb max z velocity
+        [peaks, indices] = findpeaks(velocity(:,6),'MinPeakHeight',th_vector_vel_tol);
+        th_max_vel_index_z= indices (1,1);  
+    
+    else
+        temp = 1.01*max(velocity(:,3)) - velocity(:,3);
+        [Minima,MinIdx] = findpeaks(temp,'MinPeakHeight',abs(if_vector_vel_tol));
+        if_max_vel_index_z = MinIdx(1,1);
+        
+        temp = 1.01*max(velocity(:,6))-velocity(:,6);
+        [minima, minindices] = findpeaks(temp , 'MinPeakHeight', abs(th_vector_tol));
+        th_max_vel_index_z = minindices(1,1);
+    end
     
 %     if_max_vel_index_x = if_max_v_vel_index;
 %     if_max_vel_index_y = if_max_v_vel_index;
@@ -205,8 +223,14 @@ if type ==0
     the_move_y = the_move_z;
     % Peak XYZ velocities
     %index finger max velocity (X)
-    if_max_vel = max(abs(velocity(ifs_move_x:ife_move_x,1)));
-    if_max_vel_index_x = find(abs(velocity(:,1)) == if_max_vel);
+    if(side>3)
+    if_max_vel = max((velocity(ifs_move_x:ife_move_x,1)));
+    end
+    if(side <4)
+        if_max_vel = min((velocity(ifs_move_x:ife_move_x,1)));
+    end
+    if_max_vel_index_x = find((velocity(:,1)) == if_max_vel);
+%     disp(if_max_vel_index_x);
     
     
     %index finger max velocity (Y)
@@ -215,8 +239,13 @@ if type ==0
     
         
     %thumb max velocity (X)
-    th_max_vel = max(abs(velocity(ths_move_x:the_move_x,4)));
-    th_max_vel_index_x = find(abs(velocity(:,4)) == th_max_vel);
+    if(side>3)
+    th_max_vel = max((velocity(ths_move_x:the_move_x,4)));
+    end
+    if(side <4)
+        th_max_vel = min((velocity(ths_move_x:the_move_x,4)));
+    end
+    th_max_vel_index_x = find((velocity(:,4)) == th_max_vel);
     
     %thumb max velocity (Y)
     th_max_vel = max(velocity(ths_move_x:the_move_x,5));
@@ -229,6 +258,13 @@ if type ==0
         temp_array = accel(if_max_vel_index_x:ifs_move_x,1);
     end
     peakAccel = max(temp_array);
+    if(side<4)
+     temp = accel(ifs_move_x:if_max_vel_index_x,1);
+         if(isempty(temp))
+             temp = accel(if_max_vel_index_x:ifs_move_x,1);
+         end
+     peakAccel = min(temp);
+    end    
     if_peakAccel_index_x = find(accel(:,1) == peakAccel);
     
     temp_array = accel(ifs_move_y:if_max_vel_index_y, 2); %copy index acceleration in y direction from movement start to peak velocity
@@ -251,6 +287,13 @@ if type ==0
         temp_array = accel(th_max_vel_index_x:ths_move_x, 4);
     end
     peakAccel = max(temp_array);
+    if(side<4)
+        temp = accel(ths_move_x:th_max_vel_index_x,4);
+     if(isempty(temp))
+      temp = accel(th_max_vel_index_x:ths_move_x,4);
+     end
+     peakAccel = min(temp);
+    end
     th_peakAccel_index_x = find(accel(:,4) == peakAccel);
     
     temp_array = accel(ths_move_y:th_max_vel_index_y, 5); %copy thumb acceleration in y direction from movement start to peak velocity
@@ -275,6 +318,13 @@ if type ==0
         temp_array = accel(ife_move_x:if_max_vel_index_x, 1);
     end
     peakDeccel = min(temp_array);
+    if(side<4)
+     temp = accel(if_max_vel_index_x:ife_move_x, 1);
+         if(isempty(temp))
+         temp = accel(ife_move_x:if_max_vel_index_x, 1);
+         end
+     peakDeccel = max(temp);
+    end    
     if_peakDeccel_index_x = find(accel(:,1) == peakDeccel);
     
     temp_array = accel(if_max_vel_index_y:ife_move_y, 2); %copy index acceleration in y direction from peak velocity to movement end
@@ -297,8 +347,15 @@ if type ==0
     if(isempty(temp_array))
         temp_array = accel(the_move_x:th_max_vel_index_x, 4);
     end
-    peakAccel = min(temp_array);
-    th_peakDeccel_index_x = find(accel(:,4) == peakAccel);
+    peakDeccel = min(temp_array);
+    if(side<4)
+     temp = accel(th_max_vel_index_x:the_move_x, 4);
+         if(isempty(temp))
+         temp = accel(the_move_x:th_max_vel_index_x, 4);
+         end
+     peakDeccel = max(temp);
+    end   
+    th_peakDeccel_index_x = find(accel(:,4) == peakDeccel);
     
     temp_array = accel(th_max_vel_index_y:the_move_y, 5); %copy thumb acceleration in x direction from peak velocity to movement end
     if(isempty(temp_array))

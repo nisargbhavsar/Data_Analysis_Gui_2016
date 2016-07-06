@@ -1462,14 +1462,14 @@ axes(handles.Bottom_Graph);
 if(handles.system ==1)
     if(handles.extract == 0 && handles.point ==0)%Pointing
         handles.kin_array = zeros (1,56);
-        handles.kin_array = KinVal_Extract (handles.Resample_Rate, handles.point, handles.VelEnd_Tol, handles.Vel_Tol, handles.Filtered_XYZ, handles.Filtered_Velocity_XYZ, handles.Filtered_Accel_XYZ,handles.Filtered_SagPos, handles.Filtered_Velocity, handles.Filtered_Accel, handles.vec_vel,handles.th_vec_vel, 0);
+        handles.kin_array = KinVal_Extract (handles.event_data{handles.Trial_Num, 7}, handles.Resample_Rate, handles.point, handles.VelEnd_Tol, handles.Vel_Tol, handles.Filtered_XYZ, handles.Filtered_Velocity_XYZ, handles.Filtered_Accel_XYZ,handles.Filtered_SagPos, handles.Filtered_Velocity, handles.Filtered_Accel, handles.vec_vel,handles.th_vec_vel, 0);
         handles.extract =1;
     end
 
     if(handles.extract == 0 && handles.point == 1) %Grasping
         handles.kin_array = zeros (1,32);
         input_array = [handles.Vel_Tol, handles.VelEnd_Tol, handles.obj_dia, handles.obj_dist, handles.obj_height];
-        handles.kin_array = KinVal_Extract (handles.Resample_Rate, handles.point, handles.VelEnd_Tol, handles.Filtered_XYZ, handles.Filtered_SagPos, handles.Filtered_Velocity, handles.Filtered_Accel,0,0,0,handles.vec_vel,handles.th_vec_vel, input_array);
+        handles.kin_array = KinVal_Extract (handles.event_data{handles.Trial_Num, 7}, handles.Resample_Rate, handles.point, handles.VelEnd_Tol, handles.Filtered_XYZ, handles.Filtered_SagPos, handles.Filtered_Velocity, handles.Filtered_Accel,0,0,0,handles.vec_vel,handles.th_vec_vel, input_array);
         handles.extract =1;
     end
 
@@ -1865,7 +1865,7 @@ if(handles.system == 1)
 
     disp(handles.Trial_Num);
     targetloc = handles.event_data{handles.Trial_Num, 7}; %assume target location is inputted as a numerical value following the order during calibration
-    targetloc = str2double (targetloc);
+%     targetloc = str2double (targetloc);
 
     targetx = handles.Calibration_array (targetloc, 1);
     targety = handles.Calibration_array (targetloc, 2);
@@ -2296,15 +2296,15 @@ function eventFile_Button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if(handles.system ==1)
-    try
+%     try
         [filename, pathname] = uigetfile('*.txt', 'Select the Events File');
         C = strsplit(filename,'.'); 
         handles.events_filename = strcat(C{1},'.xls');
         event_d = readtable(filename);
         event_d = table2cell(event_d);
-    catch
-        disp('Error: Please make sure the text file was exported on a Mac.');
-    end
+%     catch
+%         disp('Error: Please make sure the text file was exported on a Mac.');
+%     end
     handles.event_data = event_d;
     
     handles.curr_col = length(handles.event_data(:,1));
@@ -2677,6 +2677,6 @@ function edit13_CreateFcn(hObject, eventdata, handles)%thumb vector velocity
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-handles.th_vec_vel =0;
+handles.th_vec_vel =0.5;
 guidata(hObject, handles);
 end
