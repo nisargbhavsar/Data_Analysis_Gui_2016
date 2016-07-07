@@ -59,7 +59,7 @@ function [trial_num,varargout ] = load_LEAP_data_gui( varargin )
             i = i+1;
         end
         
-        cal_array = cal_array(1:i-1,:);
+        cal_array = cal_array(1:i-3,:);
         max_time = cal_array(end,4)/1e3;
        
         time = (0:1/50:max_time)*1e3;
