@@ -787,7 +787,7 @@ else
 end
 handles.Raw_disp = zeros(1,3);
 handles.Vel_Tol = 0.02;
-handles.VelEnd_Tol = 0.02;
+handles.VelEnd_Tol = 0.1;
 handles.kin_array = zeros(1,13);
 handles.variables = zeros (1,4);
 h = findobj(0, 'tag', 'figure1');
@@ -984,6 +984,10 @@ aCheckbox = findobj('Tag','Index_Accel_Check');
     axes(handles.Bottom_Graph);
         cla;   
 
+        A = strcat('Trial #:', num2str(handles.Trial_Num));
+set(handles.trial_num_edit,'String',A);
+ 
+guidata(hObject,handles);
 end
 
 % --- Executes on button press in Resample_Button.
@@ -992,7 +996,13 @@ function Resample_Button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.Master_array = resample(handles.system, handles.Resample_Rate, handles.Master_array);
+[status, handles.Master_array] = resample(handles.system, handles.Resample_Rate, handles.Master_array);
+if(status ==1)
+    set(handles.warning_text, 'String','Warning: There is more than 30% of data missing from this trial.');
+end
+if(status ==2)
+    set(handles.warning_text,'String','Warning: Please reject, there is no data in this trial.');
+end
 index_x = 0;
 index_y = 0;
 index_z = 0;
@@ -1875,6 +1885,9 @@ if(handles.system == 1)
     index_end_pos_y = (handles.Filtered_XYZ(handles.kin_array(1,8),2))* index;
     index_end_pos_z = (handles.Filtered_XYZ(handles.kin_array(1,9),3))* index;
 
+    index_begin_pos_x = handles.Filtered_XYZ(handles.kin_array(1,3)-1,1) *index; %index xyz values when movement starts (used movement start z index)
+    index_begin_pos_y = handles.Filtered_XYZ(handles.kin_array(1,3)-1,2) *index;
+    index_begin_pos_z = handles.Filtered_XYZ(handles.kin_array(1,3)-1,3) *index;
 
     accuracyx = (index_end_pos_x-targetx); %accuracy of 
     accuracyy = (index_end_pos_y-targety);
@@ -1920,40 +1933,44 @@ if(handles.system == 1)
     thumb_end_pos_y = handles.Filtered_XYZ(handles.kin_array(1,11),1)* thumb;
     thumb_end_pos_z = handles.Filtered_XYZ(handles.kin_array(1,12),1)* thumb;
 
-    thumb_x_PA = handles.Filtered_Accel_XYZ(handles.kin_array(1,22),1)* thumb;
-    thumb_y_PA = handles.Filtered_Accel_XYZ(handles.kin_array(1,23),2)* thumb;
-    thumb_z_PA = handles.Filtered_Accel_XYZ(handles.kin_array(1,24),3)* thumb;
+    thumb_begin_pos_x = handles.Filtered_XYZ(handles.kin_array(1,3)-1,4) * thumb; %index xyz values when movement starts (used movement start z index)
+    thumb_begin_pos_y = handles.Filtered_XYZ(handles.kin_array(1,3)-1,5) * thumb;
+    thumb_begin_pos_z = handles.Filtered_XYZ(handles.kin_array(1,3)-1,6) * thumb;
+    
+    thumb_x_PA = handles.Filtered_Accel_XYZ(handles.kin_array(1,22),4)* thumb;
+    thumb_y_PA = handles.Filtered_Accel_XYZ(handles.kin_array(1,23),5)* thumb;
+    thumb_z_PA = handles.Filtered_Accel_XYZ(handles.kin_array(1,24),6)* thumb;
 
     time_thumb_PA_z = (handles.Filtered_Accel_XYZ(handles.kin_array(1,24),7)-handles.Filtered_Accel_XYZ(handles.kin_array(1,6),7))/1000* thumb;
 
-    thumb_x_pos_PA= handles.Filtered_XYZ(handles.kin_array(1,24),1)* thumb;
-    thumb_y_pos_PA = handles.Filtered_XYZ(handles.kin_array(1,24),2)* thumb;
-    thumb_z_pos_PA = handles.Filtered_XYZ(handles.kin_array(1,24),3)* thumb;
+    thumb_x_pos_PA= handles.Filtered_XYZ(handles.kin_array(1,24),4)* thumb;
+    thumb_y_pos_PA = handles.Filtered_XYZ(handles.kin_array(1,24),5)* thumb;
+    thumb_z_pos_PA = handles.Filtered_XYZ(handles.kin_array(1,24),6)* thumb;
 
-    thumb_x_PV = handles.Filtered_Velocity_XYZ(handles.kin_array(1,16),1)* thumb;
-    thumb_y_PV = handles.Filtered_Velocity_XYZ(handles.kin_array(1,17),2)* thumb;
-    thumb_z_PV = handles.Filtered_Velocity_XYZ(handles.kin_array(1,18),3)* thumb;
+    thumb_x_PV = handles.Filtered_Velocity_XYZ(handles.kin_array(1,16),4)* thumb;
+    thumb_y_PV = handles.Filtered_Velocity_XYZ(handles.kin_array(1,17),5)* thumb;
+    thumb_z_PV = handles.Filtered_Velocity_XYZ(handles.kin_array(1,18),6)* thumb;
 
     time_thumb_PV_z = (handles.Filtered_Accel_XYZ(handles.kin_array(1,18),7) - handles.Filtered_Accel_XYZ(handles.kin_array(1,6),7))/1000* thumb;
 
-    thumb_x_pos_PV = handles.Filtered_XYZ(handles.kin_array(1,18),1)* thumb;
-    thumb_y_pos_PV = handles.Filtered_XYZ(handles.kin_array(1,18),2)* thumb;
-    thumb_z_pos_PV = handles.Filtered_XYZ(handles.kin_array(1,18),3)* thumb;
+    thumb_x_pos_PV = handles.Filtered_XYZ(handles.kin_array(1,18),4)* thumb;
+    thumb_y_pos_PV = handles.Filtered_XYZ(handles.kin_array(1,18),5)* thumb;
+    thumb_z_pos_PV = handles.Filtered_XYZ(handles.kin_array(1,18),6)* thumb;
 
-    thumb_x_PD = handles.Filtered_Accel_XYZ(handles.kin_array(1,28),1)* thumb;
-    thumb_y_PD = handles.Filtered_Accel_XYZ(handles.kin_array(1,29),2)* thumb;
-    thumb_z_PD = handles.Filtered_Accel_XYZ(handles.kin_array(1,30),3)* thumb;
+    thumb_x_PD = handles.Filtered_Accel_XYZ(handles.kin_array(1,28),4)* thumb;
+    thumb_y_PD = handles.Filtered_Accel_XYZ(handles.kin_array(1,29),5)* thumb;
+    thumb_z_PD = handles.Filtered_Accel_XYZ(handles.kin_array(1,30),6)* thumb;
 
     time_thumb_PD_z = (handles.Filtered_Accel_XYZ(handles.kin_array(1,30),7) - handles.Filtered_Accel_XYZ(handles.kin_array(1,6),7))/1000* thumb;
 
-    thumb_x_pos_PD = handles.Filtered_XYZ(handles.kin_array(1,30),1)* thumb;
-    thumb_y_pos_PD = handles.Filtered_XYZ(handles.kin_array(1,30),2)* thumb;
-    thumb_z_pos_PD = handles.Filtered_XYZ(handles.kin_array(1,30),3)* thumb;
+    thumb_x_pos_PD = handles.Filtered_XYZ(handles.kin_array(1,30),4)* thumb;
+    thumb_y_pos_PD = handles.Filtered_XYZ(handles.kin_array(1,30),5)* thumb;
+    thumb_z_pos_PD = handles.Filtered_XYZ(handles.kin_array(1,30),6)* thumb;
 
     index_peak_vel_vec =handles.Filtered_Velocity(handles.kin_array(1,31),1) *index;
     thumb_peak_vel_vec = handles.Filtered_Velocity(handles.kin_array(1,32),2) *thumb;
     
-    output_array = [trial_validity hand_latency movement_time_index_z accuracyx accuracyy accuracyz index_x_PA index_y_PA index_z_PA time_index_PA_z index_x_pos_PA index_y_pos_PA index_z_pos_PA index_x_PV index_y_PV index_z_PV time_index_PV_z index_x_pos_PV index_y_pos_PV index_z_pos_PV index_x_PD index_y_PD index_z_PD time_index_PD_z index_x_pos_PD index_y_pos_PD index_z_pos_PD index_end_pos_x index_end_pos_y index_end_pos_z thumb_x_PA thumb_y_PA thumb_z_PA time_thumb_PA_z thumb_x_pos_PA thumb_y_pos_PA thumb_z_pos_PA thumb_x_PV thumb_y_PV thumb_z_PV time_thumb_PV_z thumb_x_pos_PV thumb_y_pos_PV thumb_z_pos_PV thumb_x_PD thumb_y_PD thumb_z_PD time_thumb_PD_z thumb_x_pos_PD thumb_y_pos_PD thumb_z_pos_PD thumb_end_pos_x thumb_end_pos_y thumb_end_pos_z index_peak_vel_vec thumb_peak_vel_vec handles.kin_array(1,33)*index handles.kin_array(1,34)*index handles.kin_array(1,35)*index handles.kin_array(1,36)*index handles.kin_array(1,37)*index handles.kin_array(1,38)*index handles.kin_array(1,39)*index handles.kin_array(1,40)*index handles.kin_array(1,41)*index handles.kin_array(1,42)*index handles.kin_array(1,43)*index handles.kin_array(1,44)*index handles.kin_array(1,45)*thumb handles.kin_array(1,46)*thumb handles.kin_array(1,47)*thumb handles.kin_array(1,48)*thumb handles.kin_array(1,49)*thumb handles.kin_array(1,50)*thumb handles.kin_array(1,51)*thumb handles.kin_array(1,52)*thumb handles.kin_array(1,53)*thumb handles.kin_array(1,54)*thumb handles.kin_array(1,55)*thumb handles.kin_array(1,56)*thumb];
+    output_array = [trial_validity hand_latency movement_time_index_z accuracyx accuracyy accuracyz index_x_PA index_y_PA index_z_PA time_index_PA_z index_x_pos_PA index_y_pos_PA index_z_pos_PA index_x_PV index_y_PV index_z_PV time_index_PV_z index_x_pos_PV index_y_pos_PV index_z_pos_PV index_x_PD index_y_PD index_z_PD time_index_PD_z index_x_pos_PD index_y_pos_PD index_z_pos_PD index_end_pos_x index_end_pos_y index_end_pos_z thumb_x_PA thumb_y_PA thumb_z_PA time_thumb_PA_z thumb_x_pos_PA thumb_y_pos_PA thumb_z_pos_PA thumb_x_PV thumb_y_PV thumb_z_PV time_thumb_PV_z thumb_x_pos_PV thumb_y_pos_PV thumb_z_pos_PV thumb_x_PD thumb_y_PD thumb_z_PD time_thumb_PD_z thumb_x_pos_PD thumb_y_pos_PD thumb_z_pos_PD thumb_end_pos_x thumb_end_pos_y thumb_end_pos_z index_peak_vel_vec thumb_peak_vel_vec handles.kin_array(1,33)*index handles.kin_array(1,34)*index handles.kin_array(1,35)*index handles.kin_array(1,36)*index handles.kin_array(1,37)*index handles.kin_array(1,38)*index handles.kin_array(1,39)*index handles.kin_array(1,40)*index handles.kin_array(1,41)*index handles.kin_array(1,42)*index handles.kin_array(1,43)*index handles.kin_array(1,44)*index handles.kin_array(1,45)*thumb handles.kin_array(1,46)*thumb handles.kin_array(1,47)*thumb handles.kin_array(1,48)*thumb handles.kin_array(1,49)*thumb handles.kin_array(1,50)*thumb handles.kin_array(1,51)*thumb handles.kin_array(1,52)*thumb handles.kin_array(1,53)*thumb handles.kin_array(1,54)*thumb handles.kin_array(1,55)*thumb handles.kin_array(1,56)*thumb index_begin_pos_x index_begin_pos_y index_begin_pos_z thumb_begin_pos_x thumb_begin_pos_y thumb_begin_pos_z];
    
     %First output format
     num = num2str(handles.Trial_Num+1);
@@ -2296,15 +2313,15 @@ function eventFile_Button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if(handles.system ==1)
-%     try
+     try
         [filename, pathname] = uigetfile('*.txt', 'Select the Events File');
         C = strsplit(filename,'.'); 
         handles.events_filename = strcat(C{1},'.xls');
         event_d = readtable(filename);
         event_d = table2cell(event_d);
-%     catch
-%         disp('Error: Please make sure the text file was exported on a Mac.');
-%     end
+     catch
+         disp('Error: Please make sure the text file was exported on a Mac.');
+     end
     handles.event_data = event_d;
     
     handles.curr_col = length(handles.event_data(:,1));
@@ -2322,7 +2339,7 @@ if(handles.system ==1)
 
 %          [coloumn, ~] = size(handles.event_data);
 %          handles.curr_col = coloumn+2;
-         output_headers ={'Pointing Valid Data 1/0','Hand Latency (sec)','Movement Time (sec)','Index X Accuracy','Index Y Accuracy','Index Z Accuracy','Peak Acceleration Index X','Peak Acceleration Index Y','Peak Acceleration Index Z','Time from onset to PA_Z','Index Position X @ PA_Z','Index Position Y @ PA_Z','Index Position Z @ PA_Z','Peak Velocity Index X','Peak Velocity Index Y','Peak Velocity Index Z','Time from onset to PV_Z','Index Position X @ PV_Z','Index Position Y @ PV_Z','Index Position Z @ PV_Z','Peak Deceleration Index X','Peak Deceleration Index Y','Peak Deceleration Index Z','Time from onset to PD_Z',	'Index Position X @ PD_Z',	'Index Position Y @ PD_Z',	'Index Position Z @ PD_Z',	'Index End Position X',	'Index End Position Y',	'Index End Position Z',	'Peak Acceleration thumb X','Peak Acceleration thumb Y','Peak Acceleration thumb Z','Time from onset to PA thumb Z','Finger Position X @ PA thumb Z','Finger Position Y @ PA thumb Z','Finger Position Z @ PA thumb Z','Peak Velocity thumb X','Peak Velocity thumb Y','Peak Velocity thumb Z',	'Time from onset to PV thumb Z','Finger Position X @ PV thumb Z','Finger Position Y @ PV thumb Z','Finger Position Z @ PV thumb Z',	'Peak Deceleration thumb X','Peak Deceleration thumb Y','Peak Deceleration thumb Z','Time from onset to PD thumb Z','Thumb Position X @ PD thumb Z','Thumb Position Y @ PD_Z','Thumb Position Z @ PD thumb Z','thumb End Position X','thumb End Position Y','thumb End Position z', 'Index Peak Velocity (Vector)','Thumb Peak Velocity (Vector)', 'Index (x) 50 msec before PV', 'Index (y) 50 msec before PV', 'Index (z) 50 msec before PV', 'Index (x) 50 msec after PV', 'Index (y) 50 msec after PV', 'Index (z) 50 msec after PV', 'Index (x) 100 msec before PV','Index (y) 100msec before PV','Index (z) 100 msec before PV','Index (x) 100 msec after PV','Index (y) 100 msec after PV','Index (z) 100 msec after PV','Thumb (x) 50 msec before PV', 'Thumb (y) 50 msec before PV', 'Thumb (z) 50 msec before PV', 'Thumb (x) 50 msec after PV', 'Thumb (y) 50 msec after PV', 'Thumb (z) 50 msec after PV', 'Thumb (x) 100 msec before PV','Thumb (y) 100msec before PV','Thumb (z) 100 msec before PV','Thumb (x) 100 msec after PV','Thumb (y) 100 msec after PV','Thumb (z) 100 msec after PV'};
+         output_headers ={'Pointing Valid Data 1/0','Hand Latency (sec)','Movement Time (sec)','Index X Accuracy','Index Y Accuracy','Index Z Accuracy','Peak Acceleration Index X','Peak Acceleration Index Y','Peak Acceleration Index Z','Time from onset to PA_Z','Index Position X @ PA_Z','Index Position Y @ PA_Z','Index Position Z @ PA_Z','Peak Velocity Index X','Peak Velocity Index Y','Peak Velocity Index Z','Time from onset to PV_Z','Index Position X @ PV_Z','Index Position Y @ PV_Z','Index Position Z @ PV_Z','Peak Deceleration Index X','Peak Deceleration Index Y','Peak Deceleration Index Z','Time from onset to PD_Z',	'Index Position X @ PD_Z',	'Index Position Y @ PD_Z',	'Index Position Z @ PD_Z',	'Index End Position X',	'Index End Position Y',	'Index End Position Z',	'Peak Acceleration thumb X','Peak Acceleration thumb Y','Peak Acceleration thumb Z','Time from onset to PA thumb Z','Finger Position X @ PA thumb Z','Finger Position Y @ PA thumb Z','Finger Position Z @ PA thumb Z','Peak Velocity thumb X','Peak Velocity thumb Y','Peak Velocity thumb Z',	'Time from onset to PV thumb Z','Finger Position X @ PV thumb Z','Finger Position Y @ PV thumb Z','Finger Position Z @ PV thumb Z',	'Peak Deceleration thumb X','Peak Deceleration thumb Y','Peak Deceleration thumb Z','Time from onset to PD thumb Z','Thumb Position X @ PD thumb Z','Thumb Position Y @ PD_Z','Thumb Position Z @ PD thumb Z','thumb End Position X','thumb End Position Y','thumb End Position z', 'Index Peak Velocity (Vector)','Thumb Peak Velocity (Vector)', 'Index (x) 50 msec before PV', 'Index (y) 50 msec before PV', 'Index (z) 50 msec before PV', 'Index (x) 50 msec after PV', 'Index (y) 50 msec after PV', 'Index (z) 50 msec after PV', 'Index (x) 100 msec before PV','Index (y) 100msec before PV','Index (z) 100 msec before PV','Index (x) 100 msec after PV','Index (y) 100 msec after PV','Index (z) 100 msec after PV','Thumb (x) 50 msec before PV', 'Thumb (y) 50 msec before PV', 'Thumb (z) 50 msec before PV', 'Thumb (x) 50 msec after PV', 'Thumb (y) 50 msec after PV', 'Thumb (z) 50 msec after PV', 'Thumb (x) 100 msec before PV','Thumb (y) 100msec before PV','Thumb (z) 100 msec before PV','Thumb (x) 100 msec after PV','Thumb (y) 100 msec after PV','Thumb (z) 100 msec after PV','Index (x) pos ofbs','Index(y) pos ofbs','Index (z) pos ofbs','Thumb (x) pos ofbs','Thumb (y) pos ofbs','Thumb (z) pos ofbs'};
          %str1 = strcat('H', 1,':BI1');
          xlswrite(handles.events_filename,output_headers, 1,'H1:CI1');
 %          handles.curr_col = handles.curr_col +1;
@@ -2679,4 +2696,41 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 handles.th_vec_vel =0.5;
 guidata(hObject, handles);
+end
+
+
+function trial_num_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to trial_num_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of trial_num_edit as text
+%        str2double(get(hObject,'String')) returns contents of trial_num_edit as a double
+handles.Trial_Num = str2double(get(hObject,'String'));
+name = strcat('Trial # : ',num2str(handles.Trial_Num), ' Loaded');
+set(handles.Trial_Num_Text, 'String',name);
+guidata(hObject, handles);
+
+end
+
+% --- Executes during object creation, after setting all properties.
+function trial_num_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to trial_num_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+% --- Executes during object creation, after setting all properties.
+function warning_text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to warning_text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+set(hObject, 'String','Warning:');
+guidata(hObject,handles);
 end

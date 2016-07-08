@@ -74,7 +74,7 @@ function [trial_num,varargout ] = load_LEAP_data_gui( varargin )
         new_cal_array(:,3) = predicted_z_index;
         new_cal_array(:,4) = time'; 
         
-        [b,a] = butter(3,0.26);
+        [b,a] = butter(3,0.4);
 
         filt_cal_array(:,1)= filtfilt(b,a,new_cal_array(:,1));
         filt_cal_array(:,2) = filtfilt(b,a,new_cal_array(:,2));
