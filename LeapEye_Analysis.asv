@@ -988,7 +988,6 @@ aCheckbox = findobj('Tag','Index_Accel_Check');
 set(handles.trial_num_edit,'String',A);
  
 guidata(hObject,handles);
-drawnow; pause(0.05);  % this innocent line prevents the Matlab hang
 end
 
 % --- Executes on button press in Resample_Button.
@@ -1183,7 +1182,7 @@ set(handles.Trial_Num_Text, 'String',name);
 handles.extract =0;
 
 guidata(hObject, handles);
-drawnow; pause(0.05);  % this innocent line prevents the Matlab hang
+
 end
 
 % --- Executes on button press in Filter_Button.
@@ -1372,7 +1371,6 @@ name = strcat('Trial # : ',num2str(handles.Trial_Num), ' Filtered with: ', num2s
 set(handles.Trial_Num_Text, 'String',name);
 
 guidata(hObject, handles);
-drawnow; pause(0.05);  % this innocent line prevents the Matlab hang
 end
 
 
