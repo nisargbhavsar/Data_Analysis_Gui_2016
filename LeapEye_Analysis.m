@@ -2314,15 +2314,25 @@ function eventFile_Button_Callback(hObject, eventdata, handles)
 
 if(handles.system ==1)
      try
+        [filename, pathname] = uigetfile('*.mat','Select the Events File');
+        C= strsplit(filename, '.');
+        handles.events_filename = strcat(C{1},'.xls');
+        event_data = load('-mat',filename);
+        event_d = getfield(event_data, C{1});
+        handles.event_data = event_d;
+        a_event_d = num2cell(event_d);
+        set(handles.table1,'Data',a_event_d);
+        handles.event_data = a_event_d;
+     catch
         [filename, pathname] = uigetfile('*.txt', 'Select the Events File');
         C = strsplit(filename,'.'); 
         handles.events_filename = strcat(C{1},'.xls');
         event_d = readtable(filename);
         event_d = table2cell(event_d);
-     catch
-         disp('Error: Please make sure the text file was exported on a Mac.');
+%         disp('Error: Please make sure the text file was exported on a Mac.');
+        handles.event_data = event_d;
      end
-    handles.event_data = event_d;
+    
     
     handles.curr_col = length(handles.event_data(:,1));
     set(handles.table1,'Data',handles.event_data);
